@@ -1,33 +1,40 @@
-# This is a sample Python script.
-
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
-
 from selenium import webdriver
-from selenium.webdriver.support.ui import Select
-from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import Select
 
 PATH = "C:\Program Files (x86)\chromedriver.exe"
 driver = webdriver.Chrome(PATH)
-driver.get("https://vermont.force.com/events/s/search-events/")
+driver.get("https://vermont.force.com/events/s/search-events")
+driver.implicitly_wait(2)
 
-try:
-    elem = driver.find_element_by_xpath("//*[@id='input-7']")
-    # elem.click()
-    select = Select(elem)
-    select.select_by_visible_text('Addison')
-except NoSuchElementException:
-    pass
-# username = driver.find_elements_by_name("username")
-# password = driver.find_elements_by_name("password")
-# print(type(username))
-# username.send_keys("tyou@middlebury.edu")
-# username.sendkeys(Keys.RETURN)
+#Dictionary of xpath for all counties
+countyDict = {}
+countyDict["addison"] = '//*[@id="input-7-0-7"]'
+countyDict["bennington"] = '//*[@id="input-7-1-7"]'
+countyDict["caledonia"] = '//*[@id="input-7-2-7"]'
+countyDict["chittenden"] = '//*[@id="input-7-3-7"]'
+countyDict["essex"] = '//*[@id="input-7-4-7"]'
+countyDict["franklin"] = '//*[@id="input-7-5-7"]'
+countyDict["grand Isle"] = '//*[@id="input-7-6-7"]'
+countyDict["lamoille"] = '//*[@id="input-7-7-7"]'
+countyDict["orange"] = '//*[@id="input-7-8-7"]'
+countyDict["orleans"] ='//*[@id="input-7-9-7"]'
+countyDict["rutland"] = '//*[@id="input-7-10-7"]'
+countyDict["washington"] = '//*[@id="input-7-11-7"]'
+countyDict["windham"] = '//*[@id="input-7-12-7"]'
+countyDict["windsor"] = '//*[@id="input-7-13-7"]'
 
 
+#Select county based on user input
+county = countyDict[input("Enter your county: ").lower()]
+driver.find_element_by_xpath('//*[@id="input-7"]').click()
+driver.find_element_by_xpath(county).click()
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+#Change Date Range?? Might not be necessary
+driver.find_element_by_xpath('//*[@id="input-11"]').click()
+
+
+#Need to hit search
