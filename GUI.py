@@ -9,6 +9,8 @@ import time
 from datetime import datetime
 import tkinter as tk
 
+
+
 PATH = "C:\Program Files (x86)\chromedriver.exe"
 options = webdriver.ChromeOptions()
 
@@ -17,12 +19,6 @@ options.add_argument("headless")
 driver = webdriver.Chrome(PATH, options=options)
 driver.get("https://vermont.force.com/events/s/search-events")
 driver.implicitly_wait(2)
-
-
-#NEED THESE IF NOT USING GUI
-county = input("Enter your county: ")
-curAppt = input("Enter the date of your current appointment (mm/dd/yy): ")
-curAppt = datetime.strptime(curAppt, '%m/%d/%y')
 
 # Dictionary of xpath for all counties
 countyDict = {}
@@ -41,21 +37,12 @@ countyDict["washington"] = '//*[@id="input-7-11-7"]'
 countyDict["windham"] = '//*[@id="input-7-12-7"]'
 countyDict["windsor"] = '//*[@id="input-7-13-7"]'
 
-#WITHOUT THE GUI
-def main(county, curAppt):
-
-
-#THIS IS WITH THE GUI
-#def main(county,appt):
+def main():
     # Select county based on user input
-    #curAppt = datetime.strptime(dateVar.get(), '%m/%d/%y')
-    #countyX = countyDict[(countyVar.get()).lower()]
+    curAppt = datetime.strptime(dateVar.get(), '%m/%d/%y')
+    countyX = countyDict[(countyVar.get()).lower()]
 
-    #curAppt = datetime.strptime(appt, '%m/%d/%y')
-    countyX = countyDict[(county.lower())]
 
-    #curAppt = datetime.strptime(curAppt, '%m/%d/%y')
-    #countyX = countyDict[county.lower()]
     driver.find_element_by_xpath('//*[@id="input-7"]').click()
     driver.find_element_by_xpath(countyX).click()
 
@@ -132,11 +119,15 @@ def main(county, curAppt):
     for elem in earlierAppt:
         if elem[0] != None:
             cleanElements.append(elem[1])
+
+    #return appt, cleanElements
+
+#def step1(appt, cleanElements):
     if len(cleanElements) == 0:
         output = "There aren't currently any earlier appointments available. We'll keep checking!"
-        print(output)
-        #return output
-        return 0
+        #print(output)
+        return output
+
     else:
         output = "There are " + str(len(cleanElements)) + " earlier appointments available.\n They are: \n"
         #print("There are " + str(len(cleanElements)) + " earlier appointments available.")
@@ -145,10 +136,12 @@ def main(county, curAppt):
         for elem in cleanElements:
             output += str(label) +": " + elem + '\n'
             label += 1
-        print(output)
-        #return output
-
-    chosenDate = int(input("Which date would you like to see? (#)"))
+        #print(output)
+        return output
+def step2(chosenDateStr):
+    appt = driver.find_elements_by_xpath(
+        '/html/body/div[3]/div[1]/div/div[2]/div/div/c-vtts_cp_search-event-public/div/div/c-vtpc-site-map/div/div/div/lightning-layout/slot/lightning-layout-item[2]/slot/div/c-okpc-event-list-item[*]/div/lightning-layout/slot/lightning-layout-item[*]')
+    chosenDate = int(chosenDateStr)
     chosenDate *= 3
 
 
@@ -160,26 +153,54 @@ def main(county, curAppt):
     #//*[@id="main-content"]/div/div[2]/div/div/c-vtts_cp_search-event-public/div/div/c-vtts_cp_calendar/div[2]/table/tbody/tr[1]
     times = driver.find_elements_by_xpath('/html/body/div[3]/div[1]/div/div[2]/div/div/c-vtts_cp_search-event-public/div/div/c-vtts_cp_calendar/div[2]/table/tbody/tr[*]')
 
+    output = "Available appointments are: " + '\n'
     for element in times:
         if (element.text.find("Not") == -1):
-            print(element.text)
-    print("To book your appointment, create an account or login at https://vermont.force.com/events/s/selfregistration")
-    return 1
-
-
-#Runs the program repeatedly until earlier appointments are found
-retVal = 0
-while retVal == 0:
-    retVal = main(county,curAppt)
-    time.sleep(5)
+            output += element.text +'\n'
+    output +=("To book your appointment, create an account or login at https://vermont.force.com/events/s/selfregistration")
+    return output
 
 
 
-"""
+
 #GUI
 
 
+def addBox():
+
+    entLabel.pack()
+    ent.pack()
+    countyLabel.pack_forget()
+    countyEntry.pack_forget()
+    dateLabel.pack_forget()
+    dateEntry.pack_forget()
+    sub_btn.pack_forget()
+
+    sub_btn2.pack()
+
+def combo():
+    addBox()
+    output = main()
+    return output
+
+def combo2():
+    entLabel.pack_forget()
+    ent.pack_forget()
+    sub_btn2.pack_forget()
+    output = step2(ent.get())
+    return output
+
+def exit(event):
+    top.quit()
+
+
 top = tk.Tk()
+
+top.bind("<Escape>", exit)
+ent = tk.Entry(top, text ='Choose a date')
+entLabel = tk.Label(top, text='Choose a date', font=('calibre', 10, 'bold'))
+sub_btn2 = tk.Button(top, text='Submit')
+sub_btn2.config(command=lambda: result.config(text=combo2()))
 
 countyVar=tk.StringVar()
 dateVar=tk.StringVar()
@@ -191,17 +212,27 @@ dateLabel = tk.Label(top, text='Current Appointment', font=('calibre', 10, 'bold
 dateEntry = tk.Entry(top, textvariable=dateVar, font=('calibre', 10, 'normal'))
 
 result = tk.Label(top, text='')
-result.grid(row=2, column=0, columnspan=2)
+result.pack()
+#result.grid(row=2, column=0, columnspan=2)
 
 sub_btn=tk.Button(top, text = 'Submit')
-sub_btn.config(command=lambda: result.config(text=main(countyVar.get(),dateVar.get())))
+sub_btn.config(command=lambda: result.config(text = combo()))
 
+#addboxButton = tk.Button(top, text='<Add Time Input>', fg="Red", command=addBox)
+
+countyLabel.pack()
+countyEntry.pack()
+dateLabel.pack()
+dateEntry.pack()
+sub_btn.pack()
+#addboxButton.pack()
+"""
 countyLabel.grid(row=0,column=0)
 countyEntry.grid(row=0,column=1)
 dateLabel.grid(row=1,column=0)
 dateEntry.grid(row=1,column=1)
 sub_btn.grid(row=0,column=5)
-
-
-top.mainloop()
+addboxButton.grid(row=10,column=5)
 """
+top.attributes('-fullscreen', True)
+top.mainloop()
